@@ -71,7 +71,7 @@ dependencies {
     implementation(Libs.app_compat)
     implementation(Libs.material)
     implementation(Libs.legacy_support)
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
+//    implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
     // Test
     testImplementation(TestLibs.junit)
@@ -149,9 +149,9 @@ dependencies {
     // Jsoup
     implementation(Libs.jsoup)
 
-    // Ok http
-    implementation(Libs.okhttp_logging)
-    implementation(Libs.okhttp)
+//    // Ok http
+//    implementation(Libs.okhttp_logging)
+//    implementation(Libs.okhttp)
 
     // ExpansionPanel
     implementation(Libs.expansion_panel)
@@ -159,7 +159,10 @@ dependencies {
     // MultiSelectSpinner
     implementation(Libs.multiSelectSpinner)
 
-    // Maps
+//  // Maps
+//    implementation("com.google.android.gms:play-services-maps:18.0.2")
+//    implementation("com.google.android.gms:play-services-location:19.0.1")
+
     implementation(Libs.maps)
     implementation(Libs.location)
 

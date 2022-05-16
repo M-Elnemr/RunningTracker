@@ -105,7 +105,7 @@ object Libs{
     val easyPermissions by lazy {"pub.devrel:easypermissions:${Versions.easyPermissions}"}
 
     // GoogleMaps
-    val location by lazy {"com.google.android.gms:play-services-location:${Versions.maps}"}
+    val location by lazy {"com.google.android.gms:play-services-location:${Versions.location}"}
     val maps by lazy {"com.google.android.gms:play-services-maps:${Versions.maps}"}
 
     // Chart
