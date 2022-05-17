@@ -17,19 +17,19 @@ interface RunDAO {
     suspend fun deleteRun(run: Run)
 
     @Query("SELECT * FROM running_table ORDER BY timestamp DESC")
-    suspend fun getAllRunsSortedByDate(): Flow<List<Run>>
+    fun getAllRunsSortedByDate(): Flow<List<Run>>
 
     @Query("SELECT * FROM running_table ORDER BY timeInMillis DESC")
-    suspend fun getAllRunsSortedTimeInMillis(): Flow<List<Run>>
+    fun getAllRunsSortedTimeInMillis(): Flow<List<Run>>
 
     @Query("SELECT * FROM running_table ORDER BY distanceInMeters DESC")
-    suspend fun getAllRunsSortedByDistance(): Flow<List<Run>>
+    fun getAllRunsSortedByDistance(): Flow<List<Run>>
 
     @Query("SELECT * FROM running_table ORDER BY avgSpeedInKMH DESC")
-    suspend fun getAllRunsSortedByAverageSpeed(): Flow<List<Run>>
+    fun getAllRunsSortedByAverageSpeed(): Flow<List<Run>>
 
     @Query("SELECT * FROM running_table ORDER BY caloriesBurned DESC")
-    suspend fun getAllRunsSortedByCaloriesBurned(): Flow<List<Run>>
+    fun getAllRunsSortedByCaloriesBurned(): Flow<List<Run>>
 
     @Query("SELECT SUM(timeInMillis) FROM running_table")
     fun getTotalTimeInMillis(): Flow<Long>
