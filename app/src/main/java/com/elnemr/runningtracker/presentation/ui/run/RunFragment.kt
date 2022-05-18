@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.elnemr.runningtracker.R
 import com.elnemr.runningtracker.databinding.FragmentRunBinding
 import com.elnemr.runningtracker.presentation.base.view.BaseFragment
@@ -19,6 +20,10 @@ class RunFragment() : BaseFragment(R.layout.fragment_run) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentRunBinding.bind(view)
+
+        binding.fab.setOnClickListener {
+            findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
+        }
     }
 
     override fun setUpViewModelStateObservers() {
