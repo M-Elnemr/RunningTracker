@@ -7,7 +7,7 @@ import pub.devrel.easypermissions.EasyPermissions
 
 object PermissionUtils {
 
-    fun hasLocationPermissions(context: Context) =
+    fun hasLocationPermissions(context: Context) : Boolean =
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             EasyPermissions.hasPermissions(
                 context,
