@@ -1,12 +1,15 @@
 package com.elnemr.runningtracker.presentation.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.core.view.isVisible
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.elnemr.runningtracker.R
 import com.elnemr.runningtracker.databinding.ActivityMainBinding
 import com.elnemr.runningtracker.presentation.base.view.BaseActivity
+import com.elnemr.runningtracker.presentation.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -21,6 +24,8 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
         binding.bottomNavigationView.setupWithNavController(navHostFragment.findNavController())
 
+        navigateToTrackingFragmentIsNeeded(intent)
+
         navHostFragment.findNavController()
             .addOnDestinationChangedListener { controller, destination, arguments ->
                 when (destination.id) {
@@ -31,4 +36,16 @@ class MainActivity : BaseActivity() {
             }
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        navigateToTrackingFragmentIsNeeded(intent)
+    }
+
+    private fun navigateToTrackingFragmentIsNeeded(intent: Intent?){
+        intent?.let {
+            if (it.action == Constants.ACTION_SHOW_TRACKING_FRAGMENT){
+                navHostFragment.findNavController().navigate(R.id.action_global_trackingFragment)
+            }
+        }
+    }
 }

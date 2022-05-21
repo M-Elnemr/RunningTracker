@@ -3,6 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/AndroidStudioProjects/RunningTracker/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/AndroidStudioProjects/RunningTracker/app/src/main/res/layout/fragment_run.xml" value="0.1" />
+        <entry key="..\:/AndroidStudioProjects/RunningTracker/app/src/main/res/menu/bottom_nav_menu.xml" value="0.1" />
         <entry key="..\:/elnemr/RunningTracker/app/src/main/res/layout-land/fragment_statistics.xml" value="0.1953125" />
         <entry key="..\:/elnemr/RunningTracker/app/src/main/res/layout-land/fragment_tracking.xml" value="0.1953125" />
         <entry key="..\:/elnemr/RunningTracker/app/src/main/res/layout/activity_main.xml" value="0.22" />
