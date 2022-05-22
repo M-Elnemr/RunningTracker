@@ -7,7 +7,7 @@ import com.elnemr.runningtracker.databinding.FragmentRunBinding
 import com.elnemr.runningtracker.databinding.FragmentSettingsBinding
 import com.elnemr.runningtracker.presentation.base.view.BaseFragment
 
-class SettingsFragment() : BaseFragment(R.layout.fragment_settings) {
+class SettingsFragment : BaseFragment(R.layout.fragment_settings) {
 
     private lateinit var binding: FragmentSettingsBinding
 
