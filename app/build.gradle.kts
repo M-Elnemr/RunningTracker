@@ -149,20 +149,13 @@ dependencies {
     // Jsoup
     implementation(Libs.jsoup)
 
-//    // Ok http
-//    implementation(Libs.okhttp_logging)
-//    implementation(Libs.okhttp)
-
     // ExpansionPanel
     implementation(Libs.expansion_panel)
 
     // MultiSelectSpinner
     implementation(Libs.multiSelectSpinner)
 
-//  // Maps
-//    implementation("com.google.android.gms:play-services-maps:18.0.2")
-//    implementation("com.google.android.gms:play-services-location:19.0.1")
-
+  // Maps
     implementation(Libs.maps)
     implementation(Libs.location)
 

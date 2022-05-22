@@ -11,7 +11,7 @@ import com.elnemr.runningtracker.R
 import com.elnemr.runningtracker.databinding.FragmentRunBinding
 import com.elnemr.runningtracker.presentation.base.view.BaseFragment
 import com.elnemr.runningtracker.presentation.util.Constants.REQUEST_CODE_LOCATION_PERMISSIONS
-import com.elnemr.runningtracker.presentation.util.PermissionUtils
+import com.elnemr.runningtracker.presentation.util.LocationUtils
 import com.elnemr.runningtracker.presentation.viewmodel.MainViewModel
 import com.elnemr.runningtracker.presentation.viewmodel.state.MainViewModelState
 import kotlinx.coroutines.flow.buffer
@@ -34,22 +34,25 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
     }
 
     private fun requestPermissions() {
-        if (PermissionUtils.hasLocationPermissions(requireContext())) return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) EasyPermissions.requestPermissions(
-            this,
-            "You need to Accept location permissions to be able to use this app.",
-            REQUEST_CODE_LOCATION_PERMISSIONS,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        )
-        else EasyPermissions.requestPermissions(
-            this,
-            "You need to Accept location permissions to be able to use this app.",
-            REQUEST_CODE_LOCATION_PERMISSIONS,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        )
+        if (LocationUtils.hasLocationPermissions(requireContext())) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            EasyPermissions.requestPermissions(
+                this,
+                "You need to accept location permissions to use this app.",
+                REQUEST_CODE_LOCATION_PERMISSIONS,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        } else {
+            EasyPermissions.requestPermissions(
+                this,
+                "You need to accept location permissions to use this app.",
+                REQUEST_CODE_LOCATION_PERMISSIONS,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        }
     }
 
     override fun setUpViewModelStateObservers() {
@@ -80,7 +83,6 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 }
