@@ -1,21 +1,21 @@
 package com.elnemr.runningtracker.presentation.util
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.location.Location
 import android.os.Looper
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import javax.inject.Inject
 
 // Google’s Location Services API
 @SuppressLint("MissingPermission")
-class LocationHelper() {
+class LocationHelper @Inject constructor(private val fusedLocationProviderClient: FusedLocationProviderClient) {
 
-    private var fusedLocationProviderClient: FusedLocationProviderClient? = null
     private lateinit var locationCallback: LocationCallback
 
-    fun startTracking(context: Context, listener: ILocationListener){
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-
+    fun startTracking(listener: ILocationListener) {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locations: LocationResult) {
                 super.onLocationResult(locations)
@@ -30,14 +30,17 @@ class LocationHelper() {
             interval = Constants.LOCATION_UPDATE_INTERVAL
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
-        fusedLocationProviderClient?.requestLocationUpdates(
+        fusedLocationProviderClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
             Looper.getMainLooper()
         )
     }
 
-    fun stopTracking() = fusedLocationProviderClient?.removeLocationUpdates(locationCallback)
+    fun stopTracking() =
+        if (this::locationCallback.isInitialized) fusedLocationProviderClient.removeLocationUpdates(
+            locationCallback
+        )else{}
 
     interface ILocationListener {
         fun onLocationResult(location: Location)

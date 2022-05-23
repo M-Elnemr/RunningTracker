@@ -7,17 +7,40 @@ import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.ContextCompat.startActivity
-import com.elnemr.runningtracker.presentation.services.polyLine
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.PolylineOptions
 import pub.devrel.easypermissions.EasyPermissions
+import java.util.concurrent.TimeUnit
 
 
 object LocationUtils {
 
     const val PERMISSION_REQUEST_ACCESS_LOCATION = 100
 
+    fun getFormattedStopWatchTime(ms: Long, includeMillis: Boolean = false): String{
+
+        var milliseconds = ms
+//        val hours: Int = (milliseconds / (1000 * 60 * 60) ).toInt()
+//        milliseconds %= (1000 * 60 * 60)
+        val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
+        milliseconds -= TimeUnit.HOURS.toMillis(hours)
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
+        milliseconds -= TimeUnit.MINUTES.toMillis(minutes)
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
+        if (!includeMillis){
+            return "${if (hours < 10) "0" else ""}$hours:" +
+                    "${if (minutes < 10) "0" else ""}$minutes:" +
+                    "${if (seconds < 10) "0" else ""}$seconds"
+        }
+        milliseconds -= TimeUnit.SECONDS.toMillis(seconds)
+        milliseconds /= 100
+        return "${if (hours < 10) "0" else ""}$hours:" +
+                "${if (minutes < 10) "0" else ""}$minutes:" +
+                "${if (seconds < 10) "0" else ""}$seconds:" +
+                "$milliseconds"
+
+    }
 
     fun moveCameraToUserLocation(latestPolyline: polyLine, map: GoogleMap?) {
         if (latestPolyline.isNotEmpty()) {

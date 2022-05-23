@@ -38,7 +38,7 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             EasyPermissions.requestPermissions(
                 this,
-                "You need to accept location permissions to use this app.",
+                "You need to accept location permissions to use this.",
                 REQUEST_CODE_LOCATION_PERMISSIONS,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -46,9 +46,9 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
         } else {
             EasyPermissions.requestPermissions(
                 this,
-                "You need to accept location permissions to use this app.",
+                "You need to accept location permissions.",
                 REQUEST_CODE_LOCATION_PERMISSIONS,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+//                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
             )

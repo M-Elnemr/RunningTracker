@@ -6,20 +6,21 @@ import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.elnemr.runningtracker.R
 import com.elnemr.runningtracker.databinding.FragmentTrackingBinding
 import com.elnemr.runningtracker.presentation.base.view.BaseFragment
 import com.elnemr.runningtracker.presentation.services.TrackingService
-import com.elnemr.runningtracker.presentation.services.polyLine
 import com.elnemr.runningtracker.presentation.util.Constants
+import com.elnemr.runningtracker.presentation.util.LocationUtils
 import com.elnemr.runningtracker.presentation.util.LocationUtils.addAllPolyLines
 import com.elnemr.runningtracker.presentation.util.LocationUtils.addLatestPolyline
 import com.elnemr.runningtracker.presentation.util.LocationUtils.moveCameraToUserLocation
+import com.elnemr.runningtracker.presentation.util.polyLine
 import com.elnemr.runningtracker.presentation.viewmodel.MainViewModel
 import com.elnemr.runningtracker.presentation.viewmodel.state.MainViewModelState
 import com.google.android.gms.maps.GoogleMap
+import kotlinx.android.synthetic.main.fragment_tracking.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.buffer
@@ -34,6 +35,8 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
     private val viewModel by viewModels<MainViewModel>()
     private lateinit var binding: FragmentTrackingBinding
     private var map: GoogleMap? = null
+
+    private var curTimeInMillis = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -52,27 +55,30 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
     }
 
     private fun collectTrackingData() {
-        CoroutineScope(Dispatchers.Default).launch {
-                TrackingService.isTracking.collect {
-                    withContext(Dispatchers.Main) {
-                        Log.d("TAG", "isTracking: ${it}")
-                        updateTracking(it)
-                    }
+        CoroutineScope(Dispatchers.Main).launch {
+            launch {
+            TrackingService.isTracking.collect {
+                updateTracking(it)
+            }}
+
+            launch {
+                TrackingService.timeRunInMillis.collect{
+                    curTimeInMillis = it
+                    val formattedTime = LocationUtils.getFormattedStopWatchTime(curTimeInMillis, true)
+                    binding.tvTimer.text = formattedTime
                 }
+            }
+
         }
 
         TrackingService.pathPoints.observe(viewLifecycleOwner) {
             pathPoints = it
-            Log.d("TAG", "pathPoints: ${it}")
-
             if (pathPoints.isNotEmpty()) {
                 addLatestPolyline(pathPoints.last(), map)
                 moveCameraToUserLocation(pathPoints.last(), map)
             }
 
         }
-
-
     }
 
     private fun toggleRun() {
