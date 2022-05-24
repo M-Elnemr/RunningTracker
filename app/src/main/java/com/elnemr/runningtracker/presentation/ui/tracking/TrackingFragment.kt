@@ -1,12 +1,13 @@
 package com.elnemr.runningtracker.presentation.ui.tracking
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.View
+import android.view.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.elnemr.runningtracker.R
 import com.elnemr.runningtracker.databinding.FragmentTrackingBinding
 import com.elnemr.runningtracker.presentation.base.view.BaseFragment
@@ -17,15 +18,15 @@ import com.elnemr.runningtracker.presentation.util.LocationUtils.addAllPolyLines
 import com.elnemr.runningtracker.presentation.util.LocationUtils.addLatestPolyline
 import com.elnemr.runningtracker.presentation.util.LocationUtils.moveCameraToUserLocation
 import com.elnemr.runningtracker.presentation.util.polyLine
+import com.elnemr.runningtracker.presentation.util.showDialog
 import com.elnemr.runningtracker.presentation.viewmodel.MainViewModel
 import com.elnemr.runningtracker.presentation.viewmodel.state.MainViewModelState
 import com.google.android.gms.maps.GoogleMap
-import kotlinx.android.synthetic.main.fragment_tracking.*
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
 
@@ -38,10 +39,20 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
 
     private var curTimeInMillis = 0L
 
+    private var menu: Menu? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        setHasOptionsMenu(true)
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentTrackingBinding.bind(view)
-
         binding.btnToggleRun.setOnClickListener {
             toggleRun()
         }
@@ -51,20 +62,24 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
             addAllPolyLines(pathPoints, map)
         }
 
+        binding.btnFinishRun.setOnClickListener { showStoppingDialog() }
+
         collectTrackingData()
     }
 
     private fun collectTrackingData() {
         CoroutineScope(Dispatchers.Main).launch {
             launch {
-            TrackingService.isTracking.collect {
-                updateTracking(it)
-            }}
+                TrackingService.isTracking.collect {
+                    updateTracking(it)
+                }
+            }
 
             launch {
-                TrackingService.timeRunInMillis.collect{
+                TrackingService.timeRunInMillis.collect {
                     curTimeInMillis = it
-                    val formattedTime = LocationUtils.getFormattedStopWatchTime(curTimeInMillis, true)
+                    val formattedTime =
+                        LocationUtils.getFormattedStopWatchTime(curTimeInMillis, true)
                     binding.tvTimer.text = formattedTime
                 }
             }
@@ -82,14 +97,55 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
     }
 
     private fun toggleRun() {
-        if (isTracking) sendCommandToService(Constants.ACTION_PAUSE_SERVICE)
+        if (isTracking) {
+            sendCommandToService(Constants.ACTION_PAUSE_SERVICE)
+            menu?.getItem(0)?.isVisible = true
+        }
         else sendCommandToService(Constants.ACTION_START_OR_RESUME_SERVICE)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+
+        inflater.inflate(R.menu.toobar_tracking_menu, menu)
+        this.menu = menu
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        if (curTimeInMillis > 0L) {
+            this.menu?.getItem(0)?.isVisible = true
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_cancel_tracking -> showStoppingDialog()
+        }
+        return true
+    }
+
+    private fun showStoppingDialog(){
+        showDialog(
+            requireContext(),
+            R.string.cancel_run,
+            R.string.cancel_run_confirmation,
+            R.drawable.ic_delete,
+            ::stopRun
+        )
+    }
+
+    private fun stopRun(dialog: DialogInterface) {
+        sendCommandToService(Constants.ACTION_STOP_SERVICE)
+        findNavController().navigate(R.id.action_trackingFragment_to_runFragment)
+        dialog.cancel()
     }
 
     private fun updateTracking(isTracking: Boolean) {
         this.isTracking = isTracking
         if (isTracking) {
             binding.btnToggleRun.text = "Pause"
+            menu?.getItem(0)?.isVisible = true
             binding.btnFinishRun.isVisible = true
         } else {
             binding.btnToggleRun.text = "Start"

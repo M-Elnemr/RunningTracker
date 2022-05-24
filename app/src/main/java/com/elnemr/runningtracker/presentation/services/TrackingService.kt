@@ -28,24 +28,24 @@ import com.elnemr.runningtracker.presentation.util.LocationUtils
 import com.elnemr.runningtracker.presentation.util.polyLines
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.takeWhile
 import javax.inject.Inject
 
-// LifecycleService() contains LifecycleOwner for observing Livadate
+// LifecycleService() contains LifecycleOwner for observing Live date
 @AndroidEntryPoint
 class TrackingService : Service(), LocationHelper.ILocationListener {
 
     @Inject
     lateinit var locationHelper: LocationHelper
+
     @Inject
     lateinit var baseNotificationBuilder: NotificationCompat.Builder
     private lateinit var curNotificationBuilder: NotificationCompat.Builder
 
     private var isFirstRun = true
+    private var serviceKilled = false
     private lateinit var notificationManager: NotificationManager
     private var timeRunInSecond = MutableStateFlow(0L)
 
@@ -55,17 +55,32 @@ class TrackingService : Service(), LocationHelper.ILocationListener {
         val pathPoints: MutableLiveData<polyLines> = MutableLiveData(mutableListOf())
     }
 
+    private val job = CoroutineScope(Dispatchers.Main)
+
     override fun onCreate() {
         super.onCreate()
         notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         curNotificationBuilder = baseNotificationBuilder
-        CoroutineScope(Dispatchers.Default).launch {
-            isTracking.collect {
+        job.launch {
+            isTracking.takeWhile { !serviceKilled }.collect {
                 updateLocationTracking(it)
                 updateNotificationTrackingState(it)
             }
+        }
+    }
+
+    private fun postInitialValues() {
+        job.launch {
+            timeRunInSecond.emit(0L)
+            timeRunInMillis.emit(0L)
+            curNotificationBuilder = baseNotificationBuilder
+            pathPoints.postValue(mutableListOf())
+            timeStarted = 0L
+            lapTime = 0L
+            lastSecondTimeStamp = 0L
+            timeRun = 0L
         }
     }
 
@@ -104,14 +119,9 @@ class TrackingService : Service(), LocationHelper.ILocationListener {
                     }
                     startTimer()
                 }
-                ACTION_STOP_SERVICE -> {
-                    Log.d("", "ACTION_STOP_SERVICE")
-                }
-                ACTION_PAUSE_SERVICE -> {
-                    pauseService()
-                }
-                else -> {
-                }
+                ACTION_PAUSE_SERVICE -> pauseService()
+                ACTION_STOP_SERVICE -> killService()
+                else -> {}
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -131,15 +141,17 @@ class TrackingService : Service(), LocationHelper.ILocationListener {
 
     private fun startTimer() {
         addEmptyPolyLine()
-        CoroutineScope(Dispatchers.Default).launch {
+        job.launch {
             isTracking.emit(true)
         }
 
         timeStarted = System.currentTimeMillis()
         isTimerEnabled = true
 
-        CoroutineScope(Dispatchers.Main).launch {
+        job.launch {
+
             while (isTracking.value) {
+
                 // time difference between now and timeStarted
                 lapTime = System.currentTimeMillis() - timeStarted
 
@@ -157,8 +169,17 @@ class TrackingService : Service(), LocationHelper.ILocationListener {
         }
     }
 
+    private fun killService() {
+        isFirstRun = true
+        serviceKilled = true
+        pauseService()
+        postInitialValues()
+        stopForeground(true)
+        stopSelf()
+    }
+
     private fun pauseService() {
-        CoroutineScope(Dispatchers.Default).launch { isTracking.emit(false) }
+        job.launch { isTracking.emit(false) }
         isTimerEnabled = false
     }
 
@@ -191,18 +212,22 @@ class TrackingService : Service(), LocationHelper.ILocationListener {
     }
 
     private fun startForeGroundService() {
+        serviceKilled = false
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(notificationManager)
         }
 
         startForeground(TRACKING_NOTIFICATION_ID, baseNotificationBuilder.build())
 
-        CoroutineScope(Dispatchers.Default).launch {
-            timeRunInSecond.collect {
-
-                Log.d("TAG", "startForeGroundService: $it")
+        job.launch {
+            timeRunInSecond.takeWhile { !serviceKilled }.collect {
                 val notification =
-                    curNotificationBuilder.setContentText(LocationUtils.getFormattedStopWatchTime(it * 1000L))
+                    curNotificationBuilder.setContentText(
+                        LocationUtils.getFormattedStopWatchTime(
+                            it * 1000L
+                        )
+                    )
                 notificationManager.notify(TRACKING_NOTIFICATION_ID, notification.build())
             }
         }
@@ -220,10 +245,12 @@ class TrackingService : Service(), LocationHelper.ILocationListener {
     }
 
     override fun onLocationResult(location: Location) {
-        if (isTracking.value) {
-            addPathPointToTheLastPolyLine(location)
-            Log.d("", "NEW LOCATION ${location.latitude}")
-        }
+        if (isTracking.value) addPathPointToTheLastPolyLine(location)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
     }
 
 }

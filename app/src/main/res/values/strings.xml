@@ -8,4 +8,6 @@
         <item>Calories Burned</item>
     </string-array>
     <string name="google_maps_key">AIzaSyBN7baIVla1ywg-q1-v912ovzZzzniaq20</string>
+    <string name="cancel_run_confirmation">Are you sure to cancel the current run and delete all it\'s data</string>
+    <string name="cancel_run">Cancel the Run?</string>
 </resources>

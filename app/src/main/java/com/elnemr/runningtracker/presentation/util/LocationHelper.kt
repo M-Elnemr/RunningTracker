@@ -37,10 +37,11 @@ class LocationHelper @Inject constructor(private val fusedLocationProviderClient
         )
     }
 
-    fun stopTracking() =
+    fun stopTracking() {
         if (this::locationCallback.isInitialized) fusedLocationProviderClient.removeLocationUpdates(
             locationCallback
-        )else{}
+        )
+    }
 
     interface ILocationListener {
         fun onLocationResult(location: Location)
