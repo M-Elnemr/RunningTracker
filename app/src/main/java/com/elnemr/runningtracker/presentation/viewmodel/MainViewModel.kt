@@ -1,6 +1,7 @@
 package com.elnemr.runningtracker.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.elnemr.runningtracker.data.db.Run
 import com.elnemr.runningtracker.domain.usecase.InsertRunUseCase
 import com.elnemr.runningtracker.presentation.base.viewmodel.BaseViewModel
 import com.elnemr.runningtracker.presentation.viewmodel.state.MainViewModelState
@@ -19,8 +20,14 @@ class MainViewModel @Inject constructor(private val insertRunUseCase: InsertRunU
             }
         }
 
-    private fun onRunInserted(success: Boolean) {
+    fun insertRun(run: Run){
+        insertRunUseCase.invoke(run)
+    }
 
+    private fun onRunInserted(success: Boolean) {
+        viewModelScope.launch {
+            mediator.emit(MainViewModelState.OnRunInserted(success))
+        }
     }
 
 

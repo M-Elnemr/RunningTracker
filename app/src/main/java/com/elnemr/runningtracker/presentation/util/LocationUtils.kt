@@ -3,12 +3,15 @@ package com.elnemr.runningtracker.presentation.util
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.ContextCompat.startActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
 import pub.devrel.easypermissions.EasyPermissions
 import java.util.concurrent.TimeUnit
@@ -18,7 +21,7 @@ object LocationUtils {
 
     const val PERMISSION_REQUEST_ACCESS_LOCATION = 100
 
-    fun getFormattedStopWatchTime(ms: Long, includeMillis: Boolean = false): String{
+    fun getFormattedStopWatchTime(ms: Long, includeMillis: Boolean = false): String {
 
         var milliseconds = ms
 //        val hours: Int = (milliseconds / (1000 * 60 * 60) ).toInt()
@@ -28,7 +31,7 @@ object LocationUtils {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
         milliseconds -= TimeUnit.MINUTES.toMillis(minutes)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
-        if (!includeMillis){
+        if (!includeMillis) {
             return "${if (hours < 10) "0" else ""}$hours:" +
                     "${if (minutes < 10) "0" else ""}$minutes:" +
                     "${if (seconds < 10) "0" else ""}$seconds"
@@ -40,6 +43,37 @@ object LocationUtils {
                 "${if (seconds < 10) "0" else ""}$seconds:" +
                 "$milliseconds"
 
+    }
+
+    fun calculatePolylineLength(polyLine: polyLine): Float{
+        var distance = 0f
+        for (i in 0..polyLine.size -2){
+            val pos1 = polyLine[i]
+            val pos2 = polyLine[i + 1]
+
+            val result = FloatArray(1)
+            Location.distanceBetween(
+                pos1.latitude, pos1.longitude, pos2.latitude, pos2.longitude, result
+            )
+
+            distance += result[0]
+        }
+        return distance
+    }
+
+    fun zoomToSeeWholeTrack(pathPoints: MutableList<polyLine>, map: GoogleMap?, mapView: MapView) {
+        val bounds = LatLngBounds.builder()
+        for (polyLine in pathPoints) {
+            for (pos in polyLine) {
+                bounds.include(pos)
+            }
+        }
+
+        map?.moveCamera(
+            CameraUpdateFactory.newLatLngBounds(
+                bounds.build(), mapView.height, mapView.width, (mapView.height * 0.05f).toInt()
+            )
+        )
     }
 
     fun moveCameraToUserLocation(latestPolyline: polyLine, map: GoogleMap?) {

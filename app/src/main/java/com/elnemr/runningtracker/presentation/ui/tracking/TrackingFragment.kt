@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.elnemr.runningtracker.R
+import com.elnemr.runningtracker.data.db.Run
 import com.elnemr.runningtracker.databinding.FragmentTrackingBinding
 import com.elnemr.runningtracker.presentation.base.view.BaseFragment
 import com.elnemr.runningtracker.presentation.services.TrackingService
@@ -16,17 +17,21 @@ import com.elnemr.runningtracker.presentation.util.Constants
 import com.elnemr.runningtracker.presentation.util.LocationUtils
 import com.elnemr.runningtracker.presentation.util.LocationUtils.addAllPolyLines
 import com.elnemr.runningtracker.presentation.util.LocationUtils.addLatestPolyline
+import com.elnemr.runningtracker.presentation.util.LocationUtils.calculatePolylineLength
 import com.elnemr.runningtracker.presentation.util.LocationUtils.moveCameraToUserLocation
+import com.elnemr.runningtracker.presentation.util.LocationUtils.zoomToSeeWholeTrack
 import com.elnemr.runningtracker.presentation.util.polyLine
 import com.elnemr.runningtracker.presentation.util.showDialog
 import com.elnemr.runningtracker.presentation.viewmodel.MainViewModel
 import com.elnemr.runningtracker.presentation.viewmodel.state.MainViewModelState
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.math.round
 
 class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
 
@@ -40,6 +45,8 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
     private var curTimeInMillis = 0L
 
     private var menu: Menu? = null
+
+    private val weight = 80f
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,7 +69,10 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
             addAllPolyLines(pathPoints, map)
         }
 
-        binding.btnFinishRun.setOnClickListener { showStoppingDialog() }
+        binding.btnFinishRun.setOnClickListener {
+            zoomToSeeWholeTrack(pathPoints, map, binding.mapView)
+            endRunAndSaveToDb()
+        }
 
         collectTrackingData()
     }
@@ -100,8 +110,7 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
         if (isTracking) {
             sendCommandToService(Constants.ACTION_PAUSE_SERVICE)
             menu?.getItem(0)?.isVisible = true
-        }
-        else sendCommandToService(Constants.ACTION_START_OR_RESUME_SERVICE)
+        } else sendCommandToService(Constants.ACTION_START_OR_RESUME_SERVICE)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -125,7 +134,7 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
         return true
     }
 
-    private fun showStoppingDialog(){
+    private fun showStoppingDialog() {
         showDialog(
             requireContext(),
             R.string.cancel_run,
@@ -135,10 +144,32 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
         )
     }
 
-    private fun stopRun(dialog: DialogInterface) {
+    private fun stopRun(dialog: DialogInterface? = null) {
         sendCommandToService(Constants.ACTION_STOP_SERVICE)
         findNavController().navigate(R.id.action_trackingFragment_to_runFragment)
-        dialog.cancel()
+        dialog?.cancel()
+    }
+
+    private fun endRunAndSaveToDb() {
+
+        map?.snapshot {
+            var distanceInMeter = 0
+            for (polyline in pathPoints) {
+                distanceInMeter += calculatePolylineLength(polyline).toInt()
+            }
+
+            // to have only one decimal 0.0
+            val avgSpeed =
+                round((distanceInMeter / 1000f) / (curTimeInMillis / 1000 / 60 / 60) * 10) / 10f
+
+            val dateTimeStamp = Calendar.getInstance().timeInMillis
+            val caloriesBurned = ((distanceInMeter / 1000f) * weight).toInt()
+            val run =
+                Run(it, dateTimeStamp, avgSpeed, distanceInMeter, curTimeInMillis, caloriesBurned)
+
+            viewModel.insertRun(run)
+        }
+
     }
 
     private fun updateTracking(isTracking: Boolean) {
@@ -152,6 +183,7 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
             binding.btnFinishRun.isVisible = false
         }
     }
+
 
     private fun sendCommandToService(action: String) =
         Intent(requireContext(), TrackingService::class.java).also {
@@ -170,9 +202,19 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
 
     private fun onStateChanged(state: MainViewModelState) {
         when (state) {
+            is MainViewModelState.OnRunInserted -> onRunInserted(state.successful)
             else -> {
             }
         }
+    }
+
+    private fun onRunInserted(successful: Boolean) {
+        if (successful) Snackbar.make(
+            requireActivity().findViewById(R.id.rootView),
+            "Run Saved Successfully",
+            Snackbar.LENGTH_LONG
+        ).show()
+        stopRun()
     }
 
     override fun onResume() {

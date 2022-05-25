@@ -7,6 +7,11 @@ import kotlin.coroutines.CoroutineContext
 
 class InsertRunUseCase @Inject constructor() : BaseUseCase<Boolean, Run>() {
     override suspend fun execute(params: Run?) {
-        iRepository.insertRun(params!!)
+        try {
+            iRepository.insertRun(params!!)
+            stateFlow.emit(true)
+        }catch (e: Exception){
+            stateFlow.emit(false)
+        }
     }
 }
