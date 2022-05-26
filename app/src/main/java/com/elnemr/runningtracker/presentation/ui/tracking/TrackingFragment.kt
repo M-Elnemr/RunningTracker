@@ -70,7 +70,11 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
         }
 
         binding.btnFinishRun.setOnClickListener {
-            zoomToSeeWholeTrack(pathPoints, map, binding.mapView)
+            zoomToSeeWholeTrack(
+                pathPoints,
+                map,
+                binding.mapView
+            )
             endRunAndSaveToDb()
         }
 

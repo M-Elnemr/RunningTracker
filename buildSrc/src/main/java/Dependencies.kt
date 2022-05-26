@@ -29,6 +29,9 @@ object Libs{
     val material by lazy {"com.google.android.material:material:${Versions.material}"}
     val legacy_support by lazy {"androidx.legacy:legacy-support-v4:${Versions.legacy_support}"}
 
+    // Image Loading library Coil
+    val coil by lazy {"io.coil-kt:coil:${Versions.coil}"}
+
     // ViewModel
     val viewModel by lazy {"androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}"}
 

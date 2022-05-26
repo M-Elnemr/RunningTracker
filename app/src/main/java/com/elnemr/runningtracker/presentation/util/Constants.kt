@@ -21,4 +21,16 @@ object Constants {
     const val POLYLINE_COLOR = Color.RED
     const val POLYLINE_WIDTH = 8f
     const val MAP_ZOOM = 15f
+
+    enum class SORT_BY {
+        TIMESTAMP, TIME_IN_MILLIS, DISTANCE_IN_METER, AVG_SPEED, CALORIES_BURNED,
+    }
+
+    val SORT_LIST = listOf(
+        "Date",
+        "Running Time",
+        "Distance",
+        "Average Speed",
+        "Calories Burned"
+    )
 }

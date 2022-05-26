@@ -7,12 +7,14 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
+import android.view.View
 import androidx.core.content.ContextCompat.startActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.material.snackbar.Snackbar
 import pub.devrel.easypermissions.EasyPermissions
 import java.util.concurrent.TimeUnit
 
@@ -45,9 +47,9 @@ object LocationUtils {
 
     }
 
-    fun calculatePolylineLength(polyLine: polyLine): Float{
+    fun calculatePolylineLength(polyLine: polyLine): Float {
         var distance = 0f
-        for (i in 0..polyLine.size -2){
+        for (i in 0..polyLine.size - 2) {
             val pos1 = polyLine[i]
             val pos2 = polyLine[i + 1]
 
@@ -61,7 +63,10 @@ object LocationUtils {
         return distance
     }
 
-    fun zoomToSeeWholeTrack(pathPoints: MutableList<polyLine>, map: GoogleMap?, mapView: MapView) {
+    fun zoomToSeeWholeTrack(
+        pathPoints: MutableList<polyLine>,
+        map: GoogleMap?,
+        mapView: MapView) {
         val bounds = LatLngBounds.builder()
         for (polyLine in pathPoints) {
             for (pos in polyLine) {
@@ -69,11 +74,14 @@ object LocationUtils {
             }
         }
 
-        map?.moveCamera(
-            CameraUpdateFactory.newLatLngBounds(
-                bounds.build(), mapView.height, mapView.width, (mapView.height * 0.05f).toInt()
+        try {
+            map?.moveCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    bounds.build(), mapView.height, mapView.width, (mapView.height * 0.05f).toInt()
+                )
             )
-        )
+        } catch (e: Exception) {}
+
     }
 
     fun moveCameraToUserLocation(latestPolyline: polyLine, map: GoogleMap?) {

@@ -97,6 +97,9 @@ dependencies {
     implementation(Libs.coroutines_core)
     implementation(Libs.coroutines_android)
 
+    // Coil
+    implementation(Libs.coil)
+
     // Kotlin Serialization
     implementation(Libs.kotlinx_serialization)
 
