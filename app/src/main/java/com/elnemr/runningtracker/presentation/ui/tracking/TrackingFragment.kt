@@ -26,13 +26,16 @@ import com.elnemr.runningtracker.presentation.viewmodel.MainViewModel
 import com.elnemr.runningtracker.presentation.viewmodel.state.MainViewModelState
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.launch
 import java.util.*
+import javax.inject.Inject
 import kotlin.math.round
 
+@AndroidEntryPoint
 class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
 
     private var isTracking = false
@@ -46,7 +49,8 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
 
     private var menu: Menu? = null
 
-    private val weight = 80f
+    @set:Inject
+    var weight = 80f
 
     override fun onCreateView(
         inflater: LayoutInflater,

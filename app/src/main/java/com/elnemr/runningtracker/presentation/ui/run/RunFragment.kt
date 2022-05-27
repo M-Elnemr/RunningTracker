@@ -18,6 +18,7 @@ import com.elnemr.runningtracker.presentation.base.view.BaseFragment
 import com.elnemr.runningtracker.presentation.util.Constants
 import com.elnemr.runningtracker.presentation.util.Constants.REQUEST_CODE_LOCATION_PERMISSIONS
 import com.elnemr.runningtracker.presentation.util.LocationUtils
+import com.elnemr.runningtracker.presentation.util.atIndex
 import com.elnemr.runningtracker.presentation.util.setItems
 import com.elnemr.runningtracker.presentation.viewmodel.MainViewModel
 import com.elnemr.runningtracker.presentation.viewmodel.state.MainViewModelState
@@ -55,6 +56,7 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
 
     private fun initSpinner() = binding.spFilter.apply {
         setItems(Constants.SORT_LIST)
+        atIndex(Constants.SORT_LIST.indexOf(mSortedBy))
         setOnItemClickListener { adapterView, view, position, l ->
             if (mSortedBy != Constants.SORT_LIST[position]) {
                 mSortedBy = Constants.SORT_LIST[position]
@@ -62,7 +64,6 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
             }
         }
     }
-
 
     private fun fetchData(sortBy: String) {
         var sort = Constants.SORT_BY.TIMESTAMP
@@ -140,5 +141,15 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
 
     override fun onDetailsClicked(data: Any, view: View?) {
         TODO("Not yet implemented")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.spFilter.setText("", false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        initSpinner()
     }
 }

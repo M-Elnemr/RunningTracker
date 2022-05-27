@@ -10,3 +10,10 @@ fun AutoCompleteTextView.setItems(items: List<Any>?) {
         this.setAdapter(adapter)
     }
 }
+
+fun AutoCompleteTextView.atIndex(index: Int) {
+    adapter?.let {
+        val itemAtPosition = it.getItem(index) as String
+        this.setText(itemAtPosition, false)
+    }
+}

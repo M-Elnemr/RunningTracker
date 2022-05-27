@@ -33,4 +33,9 @@ object Constants {
         "Average Speed",
         "Calories Burned"
     )
+
+    const val SHARED_PREFERENCES_NAME = "sharedPreferences"
+    const val KEY_FIRST_TIME = "KEY_FIRST_TIME"
+    const val KEY_NAME = "KEY_NAME"
+    const val KEY_WEIGHT = "KEY_WEIGHT"
 }
