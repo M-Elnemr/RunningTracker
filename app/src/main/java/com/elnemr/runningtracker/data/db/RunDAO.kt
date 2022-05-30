@@ -40,6 +40,6 @@ interface RunDAO {
     @Query("SELECT SUM(distanceInMeters) FROM running_table")
     fun getTotalDistanceInMeters(): Flow<Int>
 
-    @Query("SELECT SUM(avgSpeedInKMH) FROM running_table")
+    @Query("SELECT AVG(avgSpeedInKMH) FROM running_table")
     fun getTotalAvgSpeedInKMH(): Flow<Float>
 }

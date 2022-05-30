@@ -158,26 +158,24 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
         dialog?.cancel()
     }
 
+
     private fun endRunAndSaveToDb() {
-
-        map?.snapshot {
-            var distanceInMeter = 0
-            for (polyline in pathPoints) {
-                distanceInMeter += calculatePolylineLength(polyline).toInt()
+        map?.snapshot { bmp ->
+            var distanceInMeters = 0
+            for(polyline in pathPoints) {
+                distanceInMeters += calculatePolylineLength(polyline).toInt()
             }
-
-            // to have only one decimal 0.0
-            val avgSpeed =
-                round((distanceInMeter / 1000f) / (curTimeInMillis / 1000 / 60 / 60) * 10) / 10f
-
-            val dateTimeStamp = Calendar.getInstance().timeInMillis
-            val caloriesBurned = ((distanceInMeter / 1000f) * weight).toInt()
-            val run =
-                Run(it, dateTimeStamp, avgSpeed, distanceInMeter, curTimeInMillis, caloriesBurned)
-
+            val avgSpeed = round((distanceInMeters / 1000f) / (curTimeInMillis / 1000f / 60 / 60) * 10) / 10f
+            val dateTimestamp = Calendar.getInstance().timeInMillis
+            val caloriesBurned = ((distanceInMeters / 1000f) * weight).toInt()
+            val run = Run(bmp, dateTimestamp, avgSpeed, distanceInMeters, curTimeInMillis, caloriesBurned)
             viewModel.insertRun(run)
+            Snackbar.make(
+                requireActivity().findViewById(R.id.rootView),
+                "Run saved successfully",
+                Snackbar.LENGTH_LONG
+            ).show()
         }
-
     }
 
     private fun updateTracking(isTracking: Boolean) {
@@ -192,13 +190,11 @@ class TrackingFragment : BaseFragment(R.layout.fragment_tracking) {
         }
     }
 
-
     private fun sendCommandToService(action: String) =
         Intent(requireContext(), TrackingService::class.java).also {
             it.action = action
             requireContext().startService(it)
         }
-
 
     override fun setUpViewModelStateObservers() {
         lifecycleScope.launchWhenCreated {

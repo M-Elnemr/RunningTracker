@@ -23,16 +23,14 @@ class SettingsFragment : BaseFragment(R.layout.fragment_settings) {
     var name = ""
 
     @set:Inject
-    var weight = 0f
+    var weight = 80f
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentSettingsBinding.bind(view)
 
-        binding.etName.setText(name)
-        if (weight != 0f) {
-            binding.etWeight.setText(weight.toString())
-        }
+        loadFieldsFromSharedPreferences()
+
         binding.btnApplyChanges.setOnClickListener {
             if (writePersonalDataToSharedPref())
                 Snackbar.make(requireView(), "Saved Successfully", Snackbar.LENGTH_SHORT).show()
@@ -42,6 +40,10 @@ class SettingsFragment : BaseFragment(R.layout.fragment_settings) {
         }
     }
 
+    private fun loadFieldsFromSharedPreferences() {
+        binding.etName.setText(name)
+        binding.etWeight.setText(weight.toString())
+    }
 
     private fun writePersonalDataToSharedPref(): Boolean {
         val name = binding.etName.toString()

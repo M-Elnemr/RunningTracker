@@ -17,8 +17,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val insertRunUseCase: InsertRunUseCase,
     private val fetchRunsUseCase: FetchRunsUseCase
-) :
-    BaseViewModel<MainViewModelState>() {
+) : BaseViewModel<MainViewModelState>() {
 
     init {
         viewModelScope.launch {
