@@ -139,9 +139,7 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
-    override fun onDetailsClicked(data: Any, view: View?) {
-        TODO("Not yet implemented")
-    }
+    override fun onDetailsClicked(data: Any, view: View?) {}
 
     override fun onPause() {
         super.onPause()

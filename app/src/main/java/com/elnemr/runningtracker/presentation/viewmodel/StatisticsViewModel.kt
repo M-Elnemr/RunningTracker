@@ -1,12 +1,10 @@
 package com.elnemr.runningtracker.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.elnemr.runningtracker.domain.usecase.GetTotalAvgSpeedUseCase
-import com.elnemr.runningtracker.domain.usecase.GetTotalCaloriesUseCase
-import com.elnemr.runningtracker.domain.usecase.GetTotalDistanceUseCase
-import com.elnemr.runningtracker.domain.usecase.GetTotalTimeInMillisUseCase
+import com.elnemr.runningtracker.data.db.Run
+import com.elnemr.runningtracker.domain.usecase.*
 import com.elnemr.runningtracker.presentation.base.viewmodel.BaseViewModel
+import com.elnemr.runningtracker.presentation.util.Constants
 import com.elnemr.runningtracker.presentation.viewmodel.state.StatisticsViewModelState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +17,8 @@ class StatisticsViewModel @Inject constructor(
     private val getTotalTimeInMillisUseCase: GetTotalTimeInMillisUseCase,
     private val getTotalDistanceUseCase: GetTotalDistanceUseCase,
     private val getTotalCaloriesUseCase: GetTotalCaloriesUseCase,
-    private val getTotalAvgSpeedUseCase: GetTotalAvgSpeedUseCase
+    private val getTotalAvgSpeedUseCase: GetTotalAvgSpeedUseCase,
+    private val fetchRunsUseCase: FetchRunsUseCase
 ) : BaseViewModel<StatisticsViewModelState>() {
 
     init {
@@ -40,14 +39,30 @@ class StatisticsViewModel @Inject constructor(
                 getTotalAvgSpeedUseCase.getStateFlow().buffer()
                     .collect { onTotalTotalAvgSpeedFetched(it) }
             }
+            launch {
+                fetchRunsUseCase.getStateFlow().buffer()
+                    .collect { onRunsFetched(it) }
+            }
         }
     }
 
-    fun getAllStatistics(){
+    private fun onRunsFetched(result: Flow<List<Run>>) {
+        viewModelScope.launch {
+            result.buffer().collect {
+                mediator.emit(StatisticsViewModelState.OnRunsFetched(it))
+            }
+        }
+    }
+
+    fun getAllStatistics() {
         getTotalAvgSpeedUseCase.invoke(null)
         getTotalDistanceUseCase.invoke(null)
         getTotalCaloriesUseCase.invoke(null)
         getTotalTimeInMillisUseCase.invoke(null)
+    }
+
+    fun fetchRunByDate(sortedBy: Constants.SORT_BY) {
+        fetchRunsUseCase.invoke(sortedBy)
     }
 
     private fun onTotalTotalAvgSpeedFetched(result: Flow<Float>) {
@@ -82,6 +97,5 @@ class StatisticsViewModel @Inject constructor(
             }
         }
     }
-
 
 }
