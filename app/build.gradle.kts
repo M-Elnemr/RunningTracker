@@ -162,9 +162,6 @@ dependencies {
     implementation(Libs.maps)
     implementation(Libs.location)
 
-    // EasyPermissions
-    implementation(Libs.easyPermissions)
-
     // Chart
     implementation(Libs.chart)
 

@@ -15,19 +15,13 @@ import com.elnemr.runningtracker.presentation.adapter.base.BaseAdapter
 import com.elnemr.runningtracker.presentation.adapter.base.OnItemClickInterface
 import com.elnemr.runningtracker.presentation.adapter.run.RunAdapter
 import com.elnemr.runningtracker.presentation.base.view.BaseFragment
-import com.elnemr.runningtracker.presentation.util.Constants
-import com.elnemr.runningtracker.presentation.util.Constants.REQUEST_CODE_LOCATION_PERMISSIONS
-import com.elnemr.runningtracker.presentation.util.LocationUtils
-import com.elnemr.runningtracker.presentation.util.atIndex
-import com.elnemr.runningtracker.presentation.util.setItems
+import com.elnemr.runningtracker.presentation.util.*
+import com.elnemr.runningtracker.presentation.util.RequestPermissionsHelper.checkIfPermissionGranted
 import com.elnemr.runningtracker.presentation.viewmodel.MainViewModel
 import com.elnemr.runningtracker.presentation.viewmodel.state.MainViewModelState
 import kotlinx.coroutines.flow.buffer
-import pub.devrel.easypermissions.AppSettingsDialog
-import pub.devrel.easypermissions.EasyPermissions
 
-class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.PermissionCallbacks,
-    OnItemClickInterface {
+class RunFragment : BaseFragment(R.layout.fragment_run), OnItemClickInterface {
     private val adapter: BaseAdapter<Run> = RunAdapter(this)
     private lateinit var binding: FragmentRunBinding
     private val viewModel by viewModels<MainViewModel>()
@@ -39,13 +33,27 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentRunBinding.bind(view)
 
-        requestPermissions()
         initSpinner()
         initAdapter()
         fetchData(mSortedBy)
 
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
+            if (LocationUtils.hasLocationPermissions(requireContext()))
+                findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
+            else requestPermissions()
+        }
+
+        RequestPermissionsHelper.permissionResult.observe(viewLifecycleOwner) {
+            it.entries.forEach {
+                if (it.value && it.key == Manifest.permission.ACCESS_FINE_LOCATION &&
+                    Build.VERSION.SDK_INT > Build.VERSION_CODES.Q &&
+                    !checkIfPermissionGranted(
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                        requireContext()
+                    )
+                )
+                    requestPermissions()
+            }
         }
     }
 
@@ -78,25 +86,19 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
     }
 
     private fun requestPermissions() {
-        if (LocationUtils.hasLocationPermissions(requireContext())) return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            EasyPermissions.requestPermissions(
-                this,
-                "You need to accept location permissions to use this.",
-                REQUEST_CODE_LOCATION_PERMISSIONS,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
+        if (!checkIfPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION, requireContext())) {
+            RequestPermissionsHelper.requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
         } else {
-            EasyPermissions.requestPermissions(
-                this,
-                "You need to accept location permissions.",
-                REQUEST_CODE_LOCATION_PERMISSIONS,
-//                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q && !checkIfPermissionGranted(
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    requireContext()
+                )
+            ) {
+                RequestPermissionsHelper.requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION))
+            }
+
         }
+
     }
 
     override fun setUpViewModelStateObservers() {
@@ -120,24 +122,6 @@ class RunFragment : BaseFragment(R.layout.fragment_run), EasyPermissions.Permiss
 
     private fun loadDataToAdapter() =
         adapter.setDataList(runs)
-
-
-    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
-        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms))
-            AppSettingsDialog.Builder(this).build().show()
-        else requestPermissions()
-    }
-
-    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {}
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
-    }
 
     override fun onDetailsClicked(data: Any, view: View?) {}
 

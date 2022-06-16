@@ -101,12 +101,6 @@ object Libs{
     // MultiSelectSpinner
     val multiSelectSpinner by lazy {"com.github.pratikbutani:MultiSelectSpinner:${Versions.multiSelectSpinner}"}
 
-    // Dexter
-    val dexter by lazy {"com.karumi:dexter:${Versions.dexter}"}
-
-    // Easy Permissions
-    val easyPermissions by lazy {"pub.devrel:easypermissions:${Versions.easyPermissions}"}
-
     // GoogleMaps
     val location by lazy {"com.google.android.gms:play-services-location:${Versions.location}"}
     val maps by lazy {"com.google.android.gms:play-services-maps:${Versions.maps}"}

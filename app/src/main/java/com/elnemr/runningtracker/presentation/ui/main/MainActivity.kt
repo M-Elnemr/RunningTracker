@@ -3,13 +3,13 @@ package com.elnemr.runningtracker.presentation.ui.main
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.view.isVisible
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.elnemr.runningtracker.R
 import com.elnemr.runningtracker.databinding.ActivityMainBinding
 import com.elnemr.runningtracker.presentation.base.view.BaseActivity
 import com.elnemr.runningtracker.presentation.util.Constants
+import com.elnemr.runningtracker.presentation.util.RequestPermissionsHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -20,6 +20,7 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        RequestPermissionsHelper.registerPermission(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.bottomNavigationView.setupWithNavController(navHostFragment.findNavController())
@@ -35,6 +36,7 @@ class MainActivity : BaseActivity() {
                 }
             }
     }
+
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)

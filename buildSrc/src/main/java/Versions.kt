@@ -36,10 +36,8 @@ object Versions {
     const val databinding = "7.1.1"
     const val expansion_panel = "1.2.4"
     const val multiSelectSpinner = "1.0.1"
-    const val dexter = "6.2.3"
     const val maps = "18.0.2"
     const val location = "19.0.1"
-    const val easyPermissions = "3.0.0"
     const val chart = "v3.1.0"
 
 

@@ -7,15 +7,12 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
-import android.view.View
 import androidx.core.content.ContextCompat.startActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.android.material.snackbar.Snackbar
-import pub.devrel.easypermissions.EasyPermissions
 import java.util.concurrent.TimeUnit
 
 
@@ -66,7 +63,8 @@ object LocationUtils {
     fun zoomToSeeWholeTrack(
         pathPoints: MutableList<polyLine>,
         map: GoogleMap?,
-        mapView: MapView) {
+        mapView: MapView
+    ) {
         val bounds = LatLngBounds.builder()
         for (polyLine in pathPoints) {
             for (pos in polyLine) {
@@ -80,7 +78,8 @@ object LocationUtils {
                     bounds.build(), mapView.height, mapView.width, (mapView.height * 0.05f).toInt()
                 )
             )
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+        }
 
     }
 
@@ -119,20 +118,21 @@ object LocationUtils {
         }
     }
 
-
     fun hasLocationPermissions(context: Context): Boolean =
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            EasyPermissions.hasPermissions(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION
+            RequestPermissionsHelper.checkIfPermissionGranted(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                context
             )
         } else {
-            EasyPermissions.hasPermissions(
-                context,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            RequestPermissionsHelper.checkIfPermissionGranted(
+                listOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ),
+                context
             )
+
         }
 
     fun isLocationEnabled(context: Context): Boolean {
